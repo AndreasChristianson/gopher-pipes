@@ -14,9 +14,14 @@ todo:
 - [ ] backpressure
 - [x] retries
 - [x] exponential backoff
-  - [ ] configurable
+  - [ ] configurable (partially complete)
 - [x] only register a sink once
 - [x] hard errors vs soft errors
 - [x] don't start right away
   - actually starting right away is better
 - [ ] pass a context
+- [ ] logging
+  - [ ] option to squelch
+  - [ ] option to collect till pipe completes
+  - [ ] option to record metrics
+  - [ ] option for verbose
