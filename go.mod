@@ -1,4 +1,4 @@
-module github.com/AndreasChristianson/gopher-pipes/m/v2
+module github.com/AndreasChristianson/gopher-pipes
 
 go 1.21.2
 
