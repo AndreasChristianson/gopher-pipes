@@ -1,3 +1,11 @@
+# Gopher Pipes
+
+Simple source/sink abstraction around generator functions, channels, mapping, and observing.
+
+### CI
+[![Go](https://github.com/AndreasChristianson/gopher-pipes/actions/workflows/test.yaml/badge.svg?branch=main&event=push)](https://github.com/AndreasChristianson/gopher-pipes/actions/workflows/test.yaml)
+
+
 todo:
 
 - [ ] how should we handle errors?
