@@ -1,84 +1,39 @@
 package reactive
 
+import (
+	"sync"
+)
+
 type Source[T any] interface {
-	Close()
-	UponClose(func()) Source[T]
-	Observe(Sink[T]) Source[T]
+	UponClose(func())
+	Observe(Sink[T])
+	Cancel() error
 }
-type source[T any] struct {
-	c chan T
-	//observed  bool
-	sinks     []func(T)
+
+type baseSource[T any] struct {
+	sinks     []func(T) error
 	uponClose []func()
 }
 
-func Just[T any](data ...T) Source[T] {
-	return FromSlice(data)
+func (b *baseSource[T]) UponClose(hook func()) {
+	b.uponClose = append(b.uponClose, sync.OnceFunc(hook))
 }
 
-func FromSlice[T any](data []T) Source[T] {
-	ret := new[T]()
-	go func() {
-		for _, item := range data {
-			ret.c <- item
-		}
-		ret.Close()
-	}()
-	return ret
+func (b *baseSource[T]) Observe(sink Sink[T]) {
+	b.sinks = append(b.sinks, sink)
 }
 
-func fromChan[T any](c chan T) *source[T] {
-	ret := source[T]{
-		c:         c,
-		uponClose: make([]func(), 0),
-		sinks:     make([]func(T), 0),
+func (b *baseSource[T]) complete() {
+	for _, hook := range b.uponClose {
+		hook()
 	}
-	go func() {
-		for item := range ret.c {
-			for _, sink := range ret.sinks {
-				sink(item)
-			}
+}
+func (b *baseSource[T]) pump(item T) {
+	for _, sink := range b.sinks {
+		err := sink(item)
+		if err != nil {
+			//log.Print("potential retry point: ", err)
+			//todo
 		}
-	}()
-	return &ret
-}
-
-func FromChan[T any](c chan T) Source[T] {
-	return fromChan[T](c)
-}
-
-func new[T any]() *source[T] {
-	c := make(chan T)
-	return fromChan(c)
-}
-
-func FromGenerator[T any](f func() (*T, error)) Source[T] {
-	ret := new[T]()
-	closed := false
-	go func() {
-		for {
-			if closed {
-				return
-			}
-			item, err := f()
-			if err != nil {
-				// no more items
-				ret.Close()
-				return
-			}
-			if item == nil {
-				continue
-			}
-			select {
-			case ret.c <- *item:
-			default: // chan closed
-				return
-			}
-		}
-	}()
-	ret.UponClose(func() {
-		closed = true
-	})
-
-	return ret
+	}
 }
