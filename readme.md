@@ -8,6 +8,9 @@ Simple source/sink abstraction around generator functions, channels, mapping, an
 
 todo:
 
+- [ ] readme
+  - [ ] examples
+  - [ ] getting started
 - [ ] how should we handle errors?
   - [ ] in sinks
   - [x] in sources
@@ -25,3 +28,8 @@ todo:
   - [ ] option to collect till pipe completes
   - [ ] option to record metrics
   - [ ] option for verbose
+- [ ] ci
+  - [ ] code coverage
+  - [ ] cut versions
+- [ ] document
+  - [ ] get us into golang docs
