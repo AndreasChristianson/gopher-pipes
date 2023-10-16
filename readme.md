@@ -8,9 +8,16 @@ Simple source/sink abstraction around generator functions, channels, mapping, an
 
 todo:
 
+- [ ] features
+  - [x] map
+  - [x] buffer
+  - [x] generator
+  - [ ] reduce
+  - [ ] peek/tap
 - [ ] readme
   - [ ] examples
   - [ ] getting started
+  - [ ] coverage badge
 - [ ] how should we handle errors?
   - [ ] in sinks
   - [x] in sources
@@ -33,3 +40,4 @@ todo:
   - [ ] cut versions
 - [ ] document
   - [ ] get us into golang docs
+  - [ ] comments with links
