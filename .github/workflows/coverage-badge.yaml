@@ -38,4 +38,4 @@ jobs:
           message-color: ${{ steps.coverage.outputs.badge-color }}
           file-name: coverage.svg
           badge-branch: badges
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          github-token: ${{ secrets.token }}
