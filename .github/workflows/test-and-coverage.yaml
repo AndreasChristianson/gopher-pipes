@@ -23,5 +23,5 @@ jobs:
         uses: tj-actions/coverage-badge-go@v2
         with:
           target: readme.md
-          url: "https://github.com/AndreasChristianson/gopher-pipes/actions/workflows/test-and-coverage.yaml"
+          link: "https://github.com/AndreasChristianson/gopher-pipes/actions/workflows/test-and-coverage.yaml"
           filename: coverage.out
