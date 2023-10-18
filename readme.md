@@ -3,8 +3,8 @@
 Simple source/sink abstraction around generator functions, channels, mapping, and observing.
 
 ### CI
-[![Go](https://github.com/AndreasChristianson/gopher-pipes/actions/workflows/test.yaml/badge.svg?branch=main&event=push)](https://github.com/AndreasChristianson/gopher-pipes/actions/workflows/test.yaml)
-
+[![coverage badge](https://github.com/AndreasChristianson/gopher-pipes/actions/workflows/coverage-badge.yaml/badge.svg)](https://github.com/AndreasChristianson/gopher-pipes/actions/workflows/coverage-badge.yaml)
+![coverage](https://raw.githubusercontent.com/AndreasChristianson/gopher-pipes/badges/.badges/main/coverage.svg)
 
 todo:
 
