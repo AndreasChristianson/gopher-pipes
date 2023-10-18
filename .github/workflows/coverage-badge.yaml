@@ -1,9 +1,13 @@
-name: Go
-on: [push]
+name: coverage badge
+on:
+  pull_request:
+    types: [closed]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    if: github.event.pull_request.merged
 
     steps:
       - uses: actions/checkout@v4
@@ -25,3 +29,14 @@ jobs:
           target: readme.md
           link: "https://github.com/AndreasChristianson/gopher-pipes/actions/workflows/test-and-coverage.yaml"
           filename: coverage.out
+      - name: Commit files
+        run: |
+          git config --local user.email "bot@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add readme.md
+          git commit -m "chore: update coverage badge"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}

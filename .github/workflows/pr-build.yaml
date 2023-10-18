@@ -1,0 +1,35 @@
+name: pr-build
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.x'
+      - name: Install dependencies
+        run: go get .
+      - name: Build
+        run: go build -v ./...
+      - name: Test
+        run: |
+          go test -v ./... -covermode=count -coverprofile=coverage.out
+          go tool cover -func=coverage.out -o=coverage.out
+      - name: Find Comment
+        uses: peter-evans/find-comment@v2
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: Build output
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: coverage.out
+          edit-mode: replace
