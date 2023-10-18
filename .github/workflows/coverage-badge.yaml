@@ -23,20 +23,23 @@ jobs:
         run: |
           go test -v ./... -covermode=count -coverprofile=coverage.out
           go tool cover -func=coverage.out -o=coverage.out
-      - name: Go Coverage Badge
-        uses: tj-actions/coverage-badge-go@v2
+      - name: check test coverage
+        id: coverage
+        uses: vladopajic/go-test-coverage@v2
         with:
-          target: readme.md
-          link: "https://github.com/AndreasChristianson/gopher-pipes/actions/workflows/test-and-coverage.yaml"
-          filename: coverage.out
-      - name: Commit files
-        run: |
-          git config --local user.email "bot@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add readme.md
-          git commit -m "chore: update coverage badge"
-      - name: Push changes
-        uses: ad-m/github-push-action@master
+          profile: coverage.out
+          local-prefix: github.com/AndreasChristianson/gopher-pipes
+          threshold-file: 70
+          threshold-package: 70
+          threshold-total: 80
+
+      - name: make coverage badge
+        uses: action-badges/core@0.2.2
+        if: contains(github.ref, 'main')
         with:
-          github_token: ${{ secrets.token }}
-          branch: ${{ github.ref }}
+          label: coverage
+          message: ${{ steps.coverage.outputs.badge-text }}
+          message-color: ${{ steps.coverage.outputs.badge-color }}
+          file-name: coverage.svg
+          badge-branch: badges
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
