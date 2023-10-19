@@ -28,6 +28,8 @@ func fromChan[T any](c chan T) *chanSource[T] {
 
 }
 
+// FromChan returns a [Source] from the provided channel. The returned [Source] is active immediately.
+// Note that this source cannot be cancelled [Source.Cancel]. It closes when the channel closes.
 func FromChan[T any](c chan T) Source[T] {
 	return fromChan[T](c)
 }

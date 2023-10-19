@@ -15,6 +15,7 @@ func (l *literalSource[T]) start() {
 		}
 	}()
 }
+
 func (l *literalSource[T]) Cancel() error {
 	return errors.New(
 		"this source is based on a literal values. " +
@@ -22,13 +23,17 @@ func (l *literalSource[T]) Cancel() error {
 	)
 }
 
+// Just returns a [Source] from the provided items. The returned [Source] is active immediately.
+// Note that this source cannot be cancelled [Source.Cancel]. It closes when all items are observed.
 func Just[T any](data ...T) Source[T] {
 	return FromSlice(data)
 }
 
+// FromSlice returns a [Source] from the provided slice of items. The returned [Source] is active immediately.
+// Note that this source cannot be cancelled [Source.Cancel]. It closes when all items are observed.
 func FromSlice[T any](data []T) Source[T] {
 	ret := literalSource[T]{
-		data:     data,
+		data: data,
 	}
 	ret.start()
 	return &ret
