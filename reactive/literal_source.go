@@ -8,12 +8,12 @@ type literalSource[T any] struct {
 }
 
 func (l *literalSource[T]) start() {
-	go func() {
+	l.SetStart(func() {
 		defer l.complete()
 		for _, item := range l.data {
 			l.pump(item)
 		}
-	}()
+	})
 }
 
 func (l *literalSource[T]) Cancel() error {

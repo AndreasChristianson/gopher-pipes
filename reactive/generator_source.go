@@ -15,24 +15,22 @@ type generatorSource[T any] struct {
 }
 
 func (g *generatorSource[T]) start() {
-	go func() {
-		defer g.complete()
-		for {
-			if g.cancelled {
-				return
-			}
-			response := g.generator()
-
-			if response.Data != nil {
-				g.pump(*response.Data)
-			}
-			if response.Finished {
-				return
-			}
-			g.incrementError(response.Err)
-			g.exponentialBackoff()
+	defer g.complete()
+	for {
+		if g.cancelled {
+			return
 		}
-	}()
+		response := g.generator()
+
+		if response.Data != nil {
+			g.pump(*response.Data)
+		}
+		if response.Finished {
+			return
+		}
+		g.incrementError(response.Err)
+		g.exponentialBackoff()
+	}
 }
 
 func (g *generatorSource[T]) Cancel() error {
@@ -81,6 +79,6 @@ func FromGeneratorWithExponentialBackoff[T any](generator func() *GeneratorRespo
 		maxBackoff: maxBackoff,
 		minBackoff: minBackoff,
 	}
-	ret.start()
+	ret.SetStart(ret.start)
 	return &ret
 }
