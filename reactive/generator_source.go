@@ -1,13 +1,14 @@
 package reactive
 
 import (
+	"github.com/AndreasChristianson/gopher-pipes/reactive/base-source"
 	"math"
 	"time"
 )
 
 type generatorSource[T any] struct {
 	generator func() *GeneratorResponse[T]
-	baseSource[T]
+	base_source.BaseSource[T]
 	cancelled             bool
 	maxBackoff            int
 	minBackoff            int
@@ -15,7 +16,7 @@ type generatorSource[T any] struct {
 }
 
 func (g *generatorSource[T]) start() {
-	defer g.complete()
+	defer g.Complete()
 	for {
 		if g.cancelled {
 			return
@@ -23,7 +24,7 @@ func (g *generatorSource[T]) start() {
 		response := g.generator()
 
 		if response.Data != nil {
-			g.pump(*response.Data)
+			g.Pump(*response.Data)
 		}
 		if response.Finished {
 			return
