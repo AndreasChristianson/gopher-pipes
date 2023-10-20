@@ -17,14 +17,14 @@ todo:
 - [ ] readme
   - [ ] examples
   - [ ] getting started
-  - [ ] coverage badge
+  - [x] coverage badge
 - [ ] how should we handle errors?
   - [ ] in sinks
   - [x] in sources
 - [ ] backpressure
 - [x] retries
 - [x] exponential backoff
-  - [ ] configurable (partially complete)
+  - [x] configurable
 - [x] only register a sink once
 - [x] hard errors vs soft errors
 - [x] don't start right away
@@ -35,9 +35,9 @@ todo:
   - [ ] option to collect till pipe completes
   - [ ] option to record metrics
   - [ ] option for verbose
-- [ ] ci
-  - [ ] code coverage
-  - [ ] cut versions
+- [x] ci
+  - [x] code coverage
+  - [x] cut versions
 - [ ] document
-  - [ ] get us into golang docs
-  - [ ] comments with links
+  - [x] get us into golang docs
+  - [x] comments with links
