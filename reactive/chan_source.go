@@ -1,10 +1,13 @@
 package reactive
 
-import "errors"
+import (
+	"errors"
+	"github.com/AndreasChristianson/gopher-pipes/reactive/base-source"
+)
 
 type chanSource[T any] struct {
-	c chan T
-	baseSource[T]
+	channel chan T
+	base_source.BaseSource[T]
 }
 
 func (c *chanSource[T]) Cancel() error {
@@ -14,16 +17,18 @@ func (c *chanSource[T]) Cancel() error {
 	)
 }
 
-func fromChan[T any](c chan T) *chanSource[T] {
-	ret := chanSource[T]{
-		c: c,
+func (c *chanSource[T]) start() {
+	defer c.Complete()
+	for item := range c.channel {
+		c.Pump(item)
 	}
-	ret.SetStart(func() {
-		defer ret.complete()
-		for item := range ret.c {
-			ret.pump(item)
-		}
-	})
+}
+
+func fromChan[T any](channel chan T) *chanSource[T] {
+	ret := chanSource[T]{
+		channel: channel,
+	}
+	ret.SetStart(ret.start)
 	return &ret
 
 }

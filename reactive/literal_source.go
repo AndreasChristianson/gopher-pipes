@@ -1,19 +1,20 @@
 package reactive
 
-import "errors"
+import (
+	"errors"
+	"github.com/AndreasChristianson/gopher-pipes/reactive/base-source"
+)
 
 type literalSource[T any] struct {
-	baseSource[T]
+	base_source.BaseSource[T]
 	data []T
 }
 
 func (l *literalSource[T]) start() {
-	l.SetStart(func() {
-		defer l.complete()
-		for _, item := range l.data {
-			l.pump(item)
-		}
-	})
+	defer l.Complete()
+	for _, item := range l.data {
+		l.Pump(item)
+	}
 }
 
 func (l *literalSource[T]) Cancel() error {
@@ -35,6 +36,6 @@ func FromSlice[T any](data []T) Source[T] {
 	ret := literalSource[T]{
 		data: data,
 	}
-	ret.start()
+	ret.SetStart(ret.start)
 	return &ret
 }
