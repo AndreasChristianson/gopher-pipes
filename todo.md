@@ -1,0 +1,35 @@
+# todo
+
+- [ ] features
+  - [x] map
+  - [x] buffer
+  - [x] generator
+  - [ ] reduce
+  - [ ] peek/tap
+- [ ] readme
+  - [ ] examples
+  - [ ] getting started
+  - [x] coverage badge
+- [ ] how should we handle errors?
+  - [ ] in sinks
+  - [x] in sources
+- [ ] backpressure
+- [x] retries
+- [x] exponential backoff
+  - [x] configurable
+- [x] only register a sink once
+- [x] hard errors vs soft errors
+- [x] don't start right away
+  - actually starting right away is better
+- [ ] pass a context
+- [ ] logging
+  - [ ] option to squelch
+  - [ ] option to collect till pipe completes
+  - [ ] option to record metrics
+  - [ ] option for verbose
+- [x] ci
+  - [x] code coverage
+  - [x] cut versions
+- [ ] document
+  - [x] get us into golang docs
+  - [x] comments with links
