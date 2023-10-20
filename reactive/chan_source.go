@@ -18,12 +18,12 @@ func fromChan[T any](c chan T) *chanSource[T] {
 	ret := chanSource[T]{
 		c: c,
 	}
-	go func() {
+	ret.SetStart(func() {
 		defer ret.complete()
 		for item := range ret.c {
 			ret.pump(item)
 		}
-	}()
+	})
 	return &ret
 
 }

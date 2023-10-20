@@ -16,14 +16,24 @@ type Source[T any] interface {
 type baseSource[T any] struct {
 	sinks     []func(T) error
 	uponClose []func()
+	startFunc func()
 }
 
 func (b *baseSource[T]) UponClose(hook func()) {
 	b.uponClose = append(b.uponClose, sync.OnceFunc(hook))
 }
+func (b *baseSource[T]) SetStart(start func()) {
+	if b.startFunc != nil {
+		panic("startFunc already set")
+	}
+	b.startFunc = sync.OnceFunc(start)
+}
 
 func (b *baseSource[T]) Observe(sink Sink[T]) {
 	b.sinks = append(b.sinks, sink)
+	if len(b.sinks) == 1 {
+		go b.startFunc()
+	}
 }
 
 func (b *baseSource[T]) complete() {

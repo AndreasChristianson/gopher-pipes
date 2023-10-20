@@ -27,6 +27,9 @@ func TestChanSource_HappyPath(t *testing.T) {
 func TestChanSource_CallsUponClose(t *testing.T) {
 	c := make(chan string)
 	underTest := FromChan(c)
+	underTest.Observe(func(s string) error {
+		return nil
+	})
 	uponCloseCalled := false
 	underTest.UponClose(func() {
 		uponCloseCalled = true
@@ -69,4 +72,24 @@ func TestChanSource_BufferedRealtime(t *testing.T) {
 	assert.Equal(t, results[1], "test")
 	assert.Equal(t, results[2], "fizzbuzz")
 	close(c)
+}
+func TestChanSource_HandlesPreStartedChannels(t *testing.T) {
+	c := make(chan string, 10)
+	defer close(c)
+	c <- "foobar"
+	c <- "test"
+	c <- "fizzbuzz"
+
+	underTest := FromChan(c)
+	<-time.After(time.Millisecond)
+
+	var results []string
+	underTest.Observe(func(s string) error {
+		results = append(results, s)
+		return nil
+	})
+	<-time.After(time.Millisecond)
+	assert.Equal(t, results[0], "foobar")
+	assert.Equal(t, results[1], "test")
+	assert.Equal(t, results[2], "fizzbuzz")
 }
