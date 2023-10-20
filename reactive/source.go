@@ -8,4 +8,14 @@ type Source[T any] interface {
 	Observe(func(T) error)
 	Cancel() error
 	// todo, consider Start()
+	startFunc func()
+func (b *baseSource[T]) SetStart(start func()) {
+	if b.startFunc != nil {
+		panic("startFunc already set")
+	}
+	b.startFunc = sync.OnceFunc(start)
+}
+	if len(b.sinks) == 1 {
+		go b.startFunc()
+	}
 }
