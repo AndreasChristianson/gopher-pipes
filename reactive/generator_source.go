@@ -1,60 +1,75 @@
 package reactive
 
 import (
-	"github.com/AndreasChristianson/gopher-pipes/reactive/base-source"
+	"errors"
+	"fmt"
 	"math"
 	"time"
 )
 
 type generatorSource[T any] struct {
-	generator func() *GeneratorResponse[T]
-	base_source.BaseSource[T]
+	generator func() (*T, error)
+	baseSource[T]
 	cancelled             bool
-	maxBackoff            int
-	minBackoff            int
+	maxBackoff            float64
+	backoffMultiplier     float64
 	consecutiveErrorCount int
 }
 
+type GeneratorFinished error
+
 func (g *generatorSource[T]) start() {
-	defer g.Complete()
 	for {
 		if g.cancelled {
+			logger(Debug, "Discovered that source is cancelled.")
 			return
 		}
-		response := g.generator()
+		response, err := g.generator()
+		if err != nil {
+			var t GeneratorFinished
+			switch {
+			case errors.As(err, &t):
+				logger(Debug, "Generator func indicates completion.")
+				return
+			default:
+				g.consecutiveErrorCount++
+				logger(Debug, "Error from generator", err)
+				logger(Verbose, "Error count incremented.", g.consecutiveErrorCount)
+				g.exponentialBackoff()
+			}
+		}
 
-		if response.Data != nil {
-			g.Pump(*response.Data)
+		if response != nil {
+			g.pump(*response)
 		}
-		if response.Finished {
-			return
-		}
-		g.incrementError(response.Err)
-		g.exponentialBackoff()
 	}
 }
 
 func (g *generatorSource[T]) Cancel() error {
+	logger(Debug, "Marking source as cancelled.")
 	g.cancelled = true
 	return nil
 }
 
 func (g *generatorSource[T]) exponentialBackoff() {
-	if g.consecutiveErrorCount == 0 && g.maxBackoff == 0 {
+	if g.consecutiveErrorCount == 0 || g.maxBackoff == 0 {
 		return
 	}
-	backOff := float64(g.minBackoff) * math.Pow(2.0, float64(g.consecutiveErrorCount))
-	millisecondsToWait := time.Duration(
-		min(float64(g.maxBackoff), backOff),
-	)
-	<-time.After(millisecondsToWait * time.Millisecond)
+	backOff := g.backoffMultiplier * math.Pow(2.0, float64(g.consecutiveErrorCount))
+	wait := time.Duration(min(g.maxBackoff, backOff)) * time.Millisecond
+
+	logger(Verbose, fmt.Sprintf("Waiting %s before next generator poll.", wait))
+	time.Sleep(wait)
 }
 
 func (g *generatorSource[T]) incrementError(err error) {
 	if err != nil {
 		g.consecutiveErrorCount++
+		logger(Debug, "Error from generator", err)
+		logger(Verbose, "Error count incremented.", g.consecutiveErrorCount)
 	} else {
 		g.consecutiveErrorCount = 0
+		logger(Verbose, "Error count reset.")
 	}
 }
 
@@ -66,20 +81,30 @@ func (g *generatorSource[T]) incrementError(err error) {
 // GeneratorResponse{Finished: true}. Finally, errors may be returned via
 // GeneratorResponse[]{ Err: err}. Note that this source can be cancelled via
 // [Source.Cancel].
-func FromGenerator[T any](generator func() *GeneratorResponse[T]) Source[T] {
+func FromGenerator[T any](generator func() (*T, error)) CancellableSource[T] {
 	return FromGeneratorWithExponentialBackoff(generator, 0, 0)
+}
+
+// FromGeneratorWithDefaultBackoff is similar to FromGenerator, but waits at least 500ms and at most 10s
+func FromGeneratorWithDefaultBackoff[T any](generator func() (*T, error)) CancellableSource[T] {
+	return FromGeneratorWithExponentialBackoff(generator, 10000, 250)
 }
 
 // FromGeneratorWithExponentialBackoff is similar to FromGenerator, but accepts parameters for implementing a exponential
 // backoff to prevent rapid polling.
 // - maxBackoff maximum time to wait in milliseconds
-// - minBackoff minimum time to wait in milliseconds
-func FromGeneratorWithExponentialBackoff[T any](generator func() *GeneratorResponse[T], maxBackoff int, minBackoff int) Source[T] {
+// - backoffMultiplier the multiplier m in m*2^e where e is the error count
+func FromGeneratorWithExponentialBackoff[T any](
+	generator func() (*T, error),
+	maxBackoff float64,
+	backoffMultiplier float64,
+) CancellableSource[T] {
+	logger(Verbose, "Creating generator based Source with exponential backoff.", generator, maxBackoff, backoffMultiplier)
 	ret := generatorSource[T]{
-		generator:  generator,
-		maxBackoff: maxBackoff,
-		minBackoff: minBackoff,
+		generator:         generator,
+		maxBackoff:        maxBackoff,
+		backoffMultiplier: backoffMultiplier,
 	}
-	ret.SetStart(ret.start)
+	ret.setStart(ret.start)
 	return &ret
 }

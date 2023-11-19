@@ -5,18 +5,23 @@ package reactive
 // Note that this source cannot be cancelled [Source.Cancel]. It closes when the upstream [Source] closes.
 func Map[T any, V any](source Source[T], mapper func(T) (V, error)) Source[V] {
 	c := make(chan V)
-	ret := fromChan(c)
+	ret := FromChan(c)
 	source.UponClose(func() {
+		logger(Debug, "Closing mapping chan.", c)
 		close(c)
 	})
 	source.Observe(func(item T) error {
 		transformed, err := mapper(item)
 		if err != nil {
+			logger(Warning, "Error mapping item.", item, err)
 			return err
 		}
+		logger(Verbose, "Mapped item.", item, transformed)
 		c <- transformed
 		return nil
 	})
+	logger(Debug, "Starting mapper.")
+	ret.Start()
 	return ret
 }
 
@@ -25,13 +30,16 @@ func Map[T any, V any](source Source[T], mapper func(T) (V, error)) Source[V] {
 // Note that this source cannot be cancelled [Source.Cancel]. It closes when the upstream [Source] closes.
 func Buffer[T any](source Source[T], size int) Source[T] {
 	c := make(chan T, size)
-	ret := fromChan(c)
+	ret := FromChan(c)
 	source.UponClose(func() {
+		logger(Debug, "Closing buffered chan.", c)
 		close(c)
 	})
 	source.Observe(func(item T) error {
 		c <- item
 		return nil
 	})
+	logger(Debug, "Starting buffer.")
+	ret.Start()
 	return ret
 }
