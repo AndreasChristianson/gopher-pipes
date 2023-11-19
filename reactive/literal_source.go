@@ -1,7 +1,7 @@
 package reactive
 
 type literalSource[T any] struct {
-	base_source.BaseSource[T]
+	baseSource[T]
 	data []T
 }
 

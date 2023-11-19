@@ -2,6 +2,7 @@ package reactive
 
 type chanSource[T any] struct {
 	channel chan T
+	baseSource[T]
 }
 
 func (c *chanSource[T]) start() {
