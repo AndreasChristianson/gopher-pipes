@@ -12,6 +12,7 @@ func TestFromSlice_NoExtraData(t *testing.T) {
 		t.Fail()
 		return nil
 	})
+	underTest.Start()
 }
 
 func TestFromSlice_HappyPath(t *testing.T) {
@@ -32,6 +33,7 @@ func TestFromSlice_HappyPath(t *testing.T) {
 		assert.Equal(t, results[1], "pingpong")
 		assert.Equal(t, results[2], "fizzbuzz")
 	})
+	underTest.Start()
 	<-time.After(time.Millisecond)
 	assert.True(t, assertionsReached)
 }
@@ -48,6 +50,7 @@ func TestJust_HappyPath(t *testing.T) {
 		assertionsReached = true
 		assert.Equal(t, results[0], "foobar")
 	})
+	underTest.Start()
 	<-time.After(time.Millisecond)
 	assert.True(t, assertionsReached)
 }

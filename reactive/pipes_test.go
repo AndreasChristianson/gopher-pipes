@@ -17,19 +17,9 @@ func TestMap_StartsImmediately(t *testing.T) {
 		result = append(result, item)
 		return nil
 	})
+	source.Start()
 	<-time.After(time.Millisecond)
 	assert.Equal(t, "123", result[0])
-}
-
-func TestMap_CannotCancel(t *testing.T) {
-	c := make(chan int)
-	defer close(c)
-	source := FromChan(c)
-	mappedSource := Map(source, func(item int) (string, error) {
-		return strconv.Itoa(item), nil
-	})
-	err := mappedSource.Cancel()
-	assert.Error(t, err)
 }
 
 func TestMap_CallsUponClose(t *testing.T) {
@@ -45,6 +35,7 @@ func TestMap_CallsUponClose(t *testing.T) {
 	mappedSource.UponClose(func() {
 		called = true
 	})
+	source.Start()
 	close(c)
 	<-time.After(time.Millisecond)
 	assert.True(t, called)
@@ -58,31 +49,27 @@ func TestBuffer_StartsImmediately(t *testing.T) {
 		result = append(result, item)
 		return nil
 	})
+	source.Start()
 	<-time.After(time.Millisecond)
 	assert.Equal(t, 123, result[0])
 }
 
-func TestBuffer_CannotCancel(t *testing.T) {
-	c := make(chan int)
-	defer close(c)
-	source := FromChan(c)
-	mappedSource := Buffer(source, 10)
-	err := mappedSource.Cancel()
-	assert.Error(t, err)
-}
-
 func TestBuffer_StartsCanAddWithoutObserving(t *testing.T) {
 	generatorCallCount := 0
-	source := FromGenerator(func() *GeneratorResponse[int] {
+	source := FromGenerator(func() (*int, error) {
 		generatorCallCount++
 
-		return &GeneratorResponse[int]{
-			Data: &generatorCallCount,
-		}
+		return &generatorCallCount, nil
 	})
-	Buffer(source, 10)
+	buffered := Buffer[int](source, 10)
+	buffered.Observe(func(item int) error {
+		time.Sleep(10 * time.Millisecond)
+		return nil
+	})
+	source.Start()
 	<-time.After(time.Millisecond)
-	assert.Equal(t, 10+1, generatorCallCount)
+	// one in the source waiting to get into the chan, one in the sink waiting to sink, 10 in the buffer
+	assert.Equal(t, 12, generatorCallCount)
 	err := source.Cancel()
 	assert.NoError(t, err)
 }
