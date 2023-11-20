@@ -12,12 +12,15 @@ func (c *chanSource[T]) start() {
 }
 
 // FromChan returns a [Source] from the provided channel. The returned [Source] is active immediately.
-
 func FromChan[T any](channel chan T) Source[T] {
-	logger(Verbose, "Creating chan based Source.", channel)
+	return fromChan(channel)
+}
+
+func fromChan[T any](channel chan T) *chanSource[T] {
 	ret := chanSource[T]{
 		channel: channel,
 	}
+	ret.log(Verbose, "Creating chan based Source.", channel)
 	ret.setStart(ret.start)
 	return &ret
 }

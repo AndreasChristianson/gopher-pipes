@@ -1,18 +1,22 @@
 package main
 
 import (
+	"fmt"
 	"github.com/AndreasChristianson/gopher-pipes/reactive"
-	"time"
+	"sync"
 )
 
 func main() {
-	pipe := reactive.Just("Hello", " ", "world")
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	pipe := reactive.Just("Hello", " ", "world", "!\n")
 	pipe.UponClose(func() {
-		println("!")
+		wg.Done()
 	})
 	pipe.Observe(func(item string) error {
-		print(item)
+		fmt.Print(item)
 		return nil
 	})
-	<-time.After(time.Millisecond)
+	pipe.Start()
+	wg.Wait()
 }
