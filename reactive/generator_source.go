@@ -2,7 +2,6 @@ package reactive
 
 import (
 	"errors"
-	"fmt"
 	"math"
 	"time"
 )
@@ -25,9 +24,10 @@ func (g GeneratorFinished) Error() string {
 func (g *generatorSource[T]) start() {
 	for {
 		if g.cancelled {
-			g.log(Debug, "Discovered that source is cancelled.")
+			g.log(Debug, "Discovered that this Source is cancelled.")
 			return
 		}
+		g.log(Debug, "Polling generator (%p).", g.generator)
 		response, err := g.generator()
 		if response != nil {
 			g.pump(*response)
@@ -36,17 +36,17 @@ func (g *generatorSource[T]) start() {
 			var t GeneratorFinished
 			switch {
 			case errors.As(err, &t):
-				g.log(Debug, "Generator func indicates completion.")
+				g.log(Debug, "Generator(%p) func indicates completion.", g.generator)
 				return
 			default:
 				g.consecutiveErrorCount++
-				g.log(Debug, fmt.Sprintf("Error from generator: [%v]", err))
-				g.log(Verbose, "Error count incremented.", g.consecutiveErrorCount)
+				g.log(Debug, "Error from generator: [%v]", err)
+				g.log(Verbose, "Error count incremented: %d", g.consecutiveErrorCount)
 				g.exponentialBackoff()
 			}
 			continue
 		}
-		g.consecutiveErrorCount = 0
+		g.clearErrorCount()
 	}
 }
 
@@ -63,8 +63,15 @@ func (g *generatorSource[T]) exponentialBackoff() {
 	backOff := g.backoffMultiplier * math.Pow(2.0, float64(g.consecutiveErrorCount))
 	wait := time.Duration(min(g.maxBackoff, backOff)) * time.Millisecond
 
-	g.log(Debug, fmt.Sprintf("Waiting %s before next generator poll.", wait))
+	g.log(Debug, "Waiting %s before next generator poll.", wait)
 	time.Sleep(wait)
+}
+
+func (g *generatorSource[T]) clearErrorCount() {
+	if g.consecutiveErrorCount > 0 {
+		g.log(Verbose, "Clearing error count")
+		g.consecutiveErrorCount = 0
+	}
 }
 
 // FromGenerator returns a [Source] from the provided generator function. The
@@ -79,9 +86,9 @@ func FromGenerator[T any](generator func() (*T, error)) CancellableSource[T] {
 	return FromGeneratorWithExponentialBackoff(generator, 0, 0)
 }
 
-// FromGeneratorWithDefaultBackoff is similar to FromGenerator, but waits at least 500ms and at most 10s
+// FromGeneratorWithDefaultBackoff is similar to FromGenerator, but waits at least 250ms and at most 10s
 func FromGeneratorWithDefaultBackoff[T any](generator func() (*T, error)) CancellableSource[T] {
-	return FromGeneratorWithExponentialBackoff(generator, 10000, 250)
+	return FromGeneratorWithExponentialBackoff(generator, 10000, 125)
 }
 
 // FromGeneratorWithExponentialBackoff is similar to FromGenerator, but accepts parameters for implementing a exponential
@@ -98,7 +105,13 @@ func FromGeneratorWithExponentialBackoff[T any](
 		maxBackoff:        maxBackoff,
 		backoffMultiplier: backoffMultiplier,
 	}
-	ret.log(Verbose, "Creating generator based Source with exponential backoff.", generator, maxBackoff, backoffMultiplier)
+	ret.log(
+		Verbose,
+		"Creating Source with exp backoff: Generator (%p), maxBackoff (%.0fms), backoffMultiplier (%.0fms)",
+		generator,
+		maxBackoff,
+		backoffMultiplier,
+	)
 	ret.setStart(ret.start)
 	return &ret
 }

@@ -3,7 +3,6 @@ package reactive
 import (
 	"github.com/stretchr/testify/assert"
 	"testing"
-	"time"
 )
 
 func TestFromSlice_NoExtraData(t *testing.T) {
@@ -13,6 +12,7 @@ func TestFromSlice_NoExtraData(t *testing.T) {
 		return nil
 	})
 	underTest.Start()
+	underTest.AwaitCompletion()
 }
 
 func TestFromSlice_HappyPath(t *testing.T) {
@@ -34,7 +34,7 @@ func TestFromSlice_HappyPath(t *testing.T) {
 		assert.Equal(t, results[2], "fizzbuzz")
 	})
 	underTest.Start()
-	<-time.After(time.Millisecond)
+	underTest.AwaitCompletion()
 	assert.True(t, assertionsReached)
 }
 
@@ -51,6 +51,6 @@ func TestJust_HappyPath(t *testing.T) {
 		assert.Equal(t, results[0], "foobar")
 	})
 	underTest.Start()
-	<-time.After(time.Millisecond)
+	underTest.AwaitCompletion()
 	assert.True(t, assertionsReached)
 }

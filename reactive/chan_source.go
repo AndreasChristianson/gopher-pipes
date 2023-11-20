@@ -20,7 +20,7 @@ func fromChan[T any](channel chan T) *chanSource[T] {
 	ret := chanSource[T]{
 		channel: channel,
 	}
-	ret.log(Verbose, "Creating chan based Source.", channel)
+	ret.log(Verbose, "Creating chan based Source: chan(%p)", channel)
 	ret.setStart(ret.start)
 	return &ret
 }

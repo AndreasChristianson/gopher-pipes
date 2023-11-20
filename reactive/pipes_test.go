@@ -10,7 +10,8 @@ import (
 func TestMap_StartsImmediately(t *testing.T) {
 	source := Just(123)
 	mappedSource := Map(source, func(item int) (string, error) {
-		return strconv.Itoa(item), nil
+		asString := strconv.Itoa(item)
+		return asString, nil
 	})
 	var result []string
 	mappedSource.Observe(func(item string) error {
@@ -18,7 +19,7 @@ func TestMap_StartsImmediately(t *testing.T) {
 		return nil
 	})
 	source.Start()
-	<-time.After(time.Millisecond)
+	source.AwaitCompletion()
 	assert.Equal(t, "123", result[0])
 }
 
@@ -27,7 +28,8 @@ func TestMap_CallsUponClose(t *testing.T) {
 	called := false
 	source := FromChan(c)
 	mappedSource := Map(source, func(item int) (string, error) {
-		return strconv.Itoa(item), nil
+		asString := strconv.Itoa(item)
+		return asString, nil
 	})
 	mappedSource.Observe(func(s string) error {
 		return nil
@@ -50,7 +52,7 @@ func TestBuffer_StartsImmediately(t *testing.T) {
 		return nil
 	})
 	source.Start()
-	<-time.After(time.Millisecond)
+	source.AwaitCompletion()
 	assert.Equal(t, 123, result[0])
 }
 
