@@ -46,7 +46,7 @@ func (l Level) String() string {
 	return strconv.Itoa(int(l))
 }
 
-var logger = func(level Level, source string, formatString string, args ...interface{}) {
+var logger = func(level Level, source interface{}, formatString string, args ...interface{}) {
 	if level < Warning {
 		return
 	}
@@ -56,16 +56,16 @@ var logger = func(level Level, source string, formatString string, args ...inter
 
 // SetLogger sets the logger for all logging in the reactive package. Default logger implementation:
 //
-//		  func(level Level, source string, formatString string, args ...interface{}) {
-//		      if level < Warning {
-//		          return
-//		      }
-//		      message := fmt.Sprintf(formatString, args...) // delay message formatting till level can be evaluated
-//	          log.Printf("%s [%s]: %s\n", level, source, message)
-//	      }
+//	func(level Level, source interface{}, formatString string, args ...interface{}) {
+//	  if level < Warning {
+//	    return
+//	  }
+//	  message := fmt.Sprintf(formatString, args...) // delay message formatting till level can be evaluated
+//	  log.Printf("%s [%s]: %s\n", level, source, message)
+//	}
 //
 // Note that the formatting string should not be evaluated until after filtering by log [Level].
 // Formatting Verbose and Debug logs can create superfluous cpu load.
-func SetLogger(newLogger func(Level, string, string, ...interface{})) {
+func SetLogger(newLogger func(Level, interface{}, string, ...interface{})) {
 	logger = newLogger
 }
