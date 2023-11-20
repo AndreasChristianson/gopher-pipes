@@ -21,7 +21,7 @@ func FromSlice[T any](data []T) Source[T] {
 	ret := literalSource[T]{
 		data: data,
 	}
-	ret.log(Verbose, "Creating Source from items.", data)
+	ret.log(Verbose, "Creating Source from items(%v).", data)
 	ret.setStart(ret.start)
 	return &ret
 }

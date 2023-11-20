@@ -2,44 +2,44 @@ package reactive
 
 // Map observes one [Source], transform the items observed with the provided mapper function,
 // and returns a [Source] of the transformed items. The returned [Source] is active immediately.
-// Note that this source cannot be cancelled [Source.Cancel]. It closes when the upstream [Source] closes.
 func Map[T any, V any](source Source[T], mapper func(T) (V, error)) Source[V] {
 	c := make(chan V)
 	ret := fromChan(c)
 	source.UponClose(func() {
-		ret.log(Debug, "Closing mapping chan.", c)
+		ret.log(Debug, "Closing mapping chan (%p)", c)
 		close(c)
+		ret.AwaitCompletion()
 	})
 	source.Observe(func(item T) error {
 		transformed, err := mapper(item)
 		if err != nil {
-			ret.log(Warning, "Error mapping item.", item, err)
+			ret.log(Warning, "Error mapping item (%p): [%v]", item, err)
 			return err
 		}
-		ret.log(Verbose, "Mapped item.", item, transformed)
+		ret.log(Verbose, "Mapped item (%p) to (%p)", item, transformed)
 		c <- transformed
 		return nil
 	})
-	ret.log(Debug, "Starting mapper.")
+	ret.log(Debug, "Created mapped source.")
 	ret.Start()
 	return ret
 }
 
 // Buffer observes one [Source], and returns a [Source] backed by a circular buffer with the requested size.
 // Implemented via a channel.
-// Note that this source cannot be cancelled [Source.Cancel]. It closes when the upstream [Source] closes.
 func Buffer[T any](source Source[T], size int) Source[T] {
 	c := make(chan T, size)
 	ret := fromChan(c)
 	source.UponClose(func() {
-		ret.log(Debug, "Closing buffered chan.", c)
+		ret.log(Debug, "Closing buffered chan (%p).", c)
 		close(c)
+		ret.AwaitCompletion()
 	})
 	source.Observe(func(item T) error {
 		c <- item
 		return nil
 	})
-	ret.log(Debug, "Starting buffer.")
+	ret.log(Debug, "Created buffered source.")
 	ret.Start()
 	return ret
 }

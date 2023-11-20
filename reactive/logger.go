@@ -31,14 +31,14 @@ func (l Level) String() string {
 	return strconv.Itoa(int(l))
 }
 
-var logger = func(level Level, source string, args ...interface{}) {
+var logger = func(level Level, source string, formatString string, args ...interface{}) {
 	if level < Warning {
 		return
 	}
-	fmt.Print(fmt.Sprintf("%s [%s]: ", level, source))
-	fmt.Println(args...)
+	message := fmt.Sprintf(formatString, args...) // delay message formatting till level can be evaluated
+	fmt.Print(fmt.Sprintf("%s [%s]: %s", level, source, message))
 }
 
-func SetLogger(newLogger func(Level, string, ...interface{})) {
+func SetLogger(newLogger func(Level, string, string, ...interface{})) {
 	logger = newLogger
 }
