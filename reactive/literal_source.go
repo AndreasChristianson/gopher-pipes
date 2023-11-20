@@ -18,10 +18,10 @@ func Just[T any](data ...T) Source[T] {
 
 // FromSlice returns a [Source] from the provided slice of items. The returned [Source] is active immediately.
 func FromSlice[T any](data []T) Source[T] {
-	logger(Verbose, "Creating Source from items.", data)
 	ret := literalSource[T]{
 		data: data,
 	}
+	ret.log(Verbose, "Creating Source from items.", data)
 	ret.setStart(ret.start)
 	return &ret
 }
