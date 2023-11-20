@@ -1,8 +1,11 @@
 package reactive
 
 import (
+	"errors"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -41,6 +44,29 @@ func TestMap_CallsUponClose(t *testing.T) {
 	close(c)
 	source.AwaitCompletion()
 	assert.True(t, called)
+}
+
+func TestMap_HandlesErrors(t *testing.T) {
+	var messages []string
+	SetLogger(func(level Level, source interface{}, messageFormat string, args ...interface{}) {
+		message := fmt.Sprintf(messageFormat, args...)
+		messages = append(messages, fmt.Sprintf("%s [%s]: %s", level, source, message))
+	})
+	c := make(chan string)
+	source := FromChan(c)
+	Map(source, func(item string) (string, error) {
+		return "", errors.New("test error")
+	})
+	source.Start()
+	c <- "test"
+	close(c)
+	source.AwaitCompletion()
+	for _, message := range messages {
+		if strings.Contains(message, "[test error]") && strings.Contains(message, "Warning") {
+			return
+		}
+	}
+	assert.Fail(t, "expected log not found")
 }
 
 func TestBuffer_StartsImmediately(t *testing.T) {

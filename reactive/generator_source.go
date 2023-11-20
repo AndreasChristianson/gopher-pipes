@@ -27,7 +27,7 @@ func (g *generatorSource[T]) start() {
 			g.log(Debug, "Discovered that this Source is cancelled.")
 			return
 		}
-		g.log(Debug, "Polling generator (%p).", g.generator)
+		g.log(Verbose, "Polling generator (%p).", g.generator)
 		response, err := g.generator()
 		if response != nil {
 			g.pump(*response)
@@ -40,8 +40,8 @@ func (g *generatorSource[T]) start() {
 				return
 			default:
 				g.consecutiveErrorCount++
-				g.log(Debug, "Error from generator: [%v]", err)
-				g.log(Verbose, "Error count incremented: %d", g.consecutiveErrorCount)
+				g.log(Info, "Error from generator: [%v]", err)
+				g.log(Debug, "Error count incremented: %d", g.consecutiveErrorCount)
 				g.exponentialBackoff()
 			}
 			continue
@@ -51,7 +51,7 @@ func (g *generatorSource[T]) start() {
 }
 
 func (g *generatorSource[T]) Cancel() error {
-	g.log(Debug, "Marking source as cancelled.")
+	g.log(Info, "Marking source as cancelled.")
 	g.cancelled = true
 	return nil
 }
@@ -63,25 +63,25 @@ func (g *generatorSource[T]) exponentialBackoff() {
 	backOff := g.backoffMultiplier * math.Pow(2.0, float64(g.consecutiveErrorCount))
 	wait := time.Duration(min(g.maxBackoff, backOff)) * time.Millisecond
 
-	g.log(Debug, "Waiting %s before next generator poll.", wait)
+	g.log(Verbose, "Waiting %s before next generator poll.", wait)
 	time.Sleep(wait)
 }
 
 func (g *generatorSource[T]) clearErrorCount() {
 	if g.consecutiveErrorCount > 0 {
-		g.log(Verbose, "Clearing error count")
+		g.log(Debug, "Clearing error count")
 		g.consecutiveErrorCount = 0
 	}
 }
 
-// FromGenerator returns a [Source] from the provided generator function. The
-// returned [Source] is active immediately. The generator provided will be polled
-// for items, it should return `*T,nil` when an item is
-// available. If no item is available, the generator should return
-// `nil,nil`. If the generator is complete it should return
-// `*T,GeneratorFinished`. Finally, errors may be returned via
-// `nil,err`. Note that this source can be cancelled via
-// [Source.Cancel].
+// FromGenerator returns a [Source] from the provided generator function. The generator provided will be polled
+// for items:
+//   - The generator should return (*T, nil) when an item is available.
+//   - If no item is available, the generator should return (nil, nil).
+//   - If the generator is complete it should return (*T, GeneratorFinished)
+//   - Finally, errors may be returned via (nil, error).
+//
+// Note that this source can be cancelled via [CancellableSource.Cancel].
 func FromGenerator[T any](generator func() (*T, error)) CancellableSource[T] {
 	return FromGeneratorWithExponentialBackoff(generator, 0, 0)
 }
@@ -93,8 +93,8 @@ func FromGeneratorWithDefaultBackoff[T any](generator func() (*T, error)) Cancel
 
 // FromGeneratorWithExponentialBackoff is similar to FromGenerator, but accepts parameters for implementing a exponential
 // backoff to prevent rapid polling.
-// - maxBackoff maximum time to wait in milliseconds
-// - backoffMultiplier the multiplier m in m*2^e where e is the error count
+//   - maxBackoff maximum time to wait in milliseconds
+//   - backoffMultiplier the multiplier m in m*2^e where e is the error count
 func FromGeneratorWithExponentialBackoff[T any](
 	generator func() (*T, error),
 	maxBackoff float64,

@@ -1,7 +1,7 @@
 # Gopher Pipes
 [![main-build](https://github.com/AndreasChristianson/gopher-pipes/actions/workflows/main-build.yaml/badge.svg)](https://github.com/AndreasChristianson/gopher-pipes/actions/workflows/main-build.yaml)
 ![coverage](https://raw.githubusercontent.com/AndreasChristianson/gopher-pipes/badges/.badges/main/coverage.svg)
-[![Go Reference](https://pkg.go.dev/badge/github.com/AndreasChristianson/gopher-pipes.svg)](https://pkg.go.dev/github.com/AndreasChristianson/gopher-pipes)
+[![Go Reference](https://pkg.go.dev/badge/github.com/AndreasChristianson/gopher-pipes.svg)](https://pkg.go.dev/github.com/AndreasChristianson/gopher-pipes/reactive)
 
 Simple source/sink abstraction around generator functions, channels, and observing.
 
@@ -18,6 +18,7 @@ see [the examples folder](/examples) for more examples.
 ### simple
 
 This example creates a source with four strings, observes them, and prints the observed strings.
+Verbose logging is enabled.
 
 ```go
 package main
@@ -41,7 +42,7 @@ func main() {
 ### complicated
 
 This example polls a persistent redis stream via [XREAD](https://redis.io/commands/xread/) 
-and routes messages to a websocket
+and routes messages to a [websocket](https://github.com/gorilla/websocket)
 
 ```go
 // todo

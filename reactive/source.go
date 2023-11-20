@@ -1,8 +1,8 @@
 package reactive
 
 // Source is a producer of items. A Source can be based on a generator function ([FromGenerator],
-// [FromGeneratorWithExponentialBackoff]), from a channel ([FromChan])
-// or from a literal ([Just]).
+// [FromGeneratorWithExponentialBackoff]), a channel ([FromChan])
+// or a literal ([Just]).
 type Source[T any] interface {
 	// UponClose registers a hook to run then this source shuts down.
 	// All registered functions will complete before AwaitCompletion unblocks
@@ -17,7 +17,11 @@ type Source[T any] interface {
 	AwaitCompletion()
 }
 
+// CancellableSource is a [Source] that can be canceled.
+// or a literal ([Just]).
 type CancellableSource[T any] interface {
 	Source[T]
+	// Cancel stops the propagation of items from this source. If the [CancellableSource] is based on a generator, the
+	// generator is no longer polled.
 	Cancel() error
 }

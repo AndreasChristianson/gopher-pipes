@@ -11,17 +11,14 @@ import (
 )
 
 func main() {
-	reactive.SetLogger(func(level reactive.Level, id string, messageFormat string, args ...interface{}) {
-		if level < reactive.Verbose {
-			return
-		}
+	reactive.SetLogger(func(level reactive.Level, id interface{}, messageFormat string, args ...interface{}) {
 		message := fmt.Sprintf(messageFormat, args...)
 		log.Default().Printf("%s [%s]: %s", level, id, message)
 	})
 	returns := []string{"Hello", "world", "!"}
 	pos := 0
 	pipe := reactive.FromGeneratorWithDefaultBackoff(func() (*string, error) {
-		if rand.Float32() > 0 {
+		if rand.Float32() > 0.8 {
 			return nil, errors.New("simulated generator error")
 		}
 		if rand.Float32() > 0.5 {
