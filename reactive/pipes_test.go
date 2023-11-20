@@ -39,7 +39,7 @@ func TestMap_CallsUponClose(t *testing.T) {
 	})
 	source.Start()
 	close(c)
-	<-time.After(time.Millisecond)
+	source.AwaitCompletion()
 	assert.True(t, called)
 }
 
@@ -69,9 +69,10 @@ func TestBuffer_StartsCanAddWithoutObserving(t *testing.T) {
 		return nil
 	})
 	source.Start()
-	<-time.After(time.Millisecond)
+	time.Sleep(time.Millisecond)
 	// one in the source waiting to get into the chan, one in the sink waiting to sink, 10 in the buffer
-	assert.Equal(t, 12, generatorCallCount)
 	err := source.Cancel()
 	assert.NoError(t, err)
+	source.AwaitCompletion()
+	assert.Equal(t, 12, generatorCallCount)
 }
