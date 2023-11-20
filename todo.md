@@ -10,8 +10,8 @@
   - [ ] examples
   - [ ] getting started
   - [x] coverage badge
-- [ ] how should we handle errors?
-  - [ ] in sinks
+- [x] how should we handle errors?
+  - [x] in sinks
   - [x] in sources
 - [ ] backpressure
 - [x] retries
@@ -22,14 +22,14 @@
 - [x] don't start right away
   - actually starting right away is better
 - [ ] pass a context
-- [ ] logging
-  - [ ] option to squelch
+- [x] logging
+  - [x] option to squelch
   - [ ] option to collect till pipe completes
   - [ ] option to record metrics
-  - [ ] option for verbose
+  - [x] option for verbose
 - [x] ci
   - [x] code coverage
   - [x] cut versions
-- [ ] document
+- [x] document
   - [x] get us into golang docs
   - [x] comments with links
