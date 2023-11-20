@@ -11,17 +11,17 @@ func (l *literalSource[T]) start() {
 	}
 }
 
-// Just returns a [Source] from the provided items. The returned [Source] is active immediately.
+// Just returns a [Source] from the provided items.
 func Just[T any](data ...T) Source[T] {
 	return FromSlice(data)
 }
 
-// FromSlice returns a [Source] from the provided slice of items. The returned [Source] is active immediately.
+// FromSlice returns a [Source] from the provided slice of items.
 func FromSlice[T any](data []T) Source[T] {
 	ret := literalSource[T]{
 		data: data,
 	}
-	ret.log(Verbose, "Creating Source from items(%v).", data)
+	ret.log(Verbose, "Creating Source from items(%.10s).", data)
 	ret.setStart(ret.start)
 	return &ret
 }

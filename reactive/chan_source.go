@@ -11,7 +11,7 @@ func (c *chanSource[T]) start() {
 	}
 }
 
-// FromChan returns a [Source] from the provided channel. The returned [Source] is active immediately.
+// FromChan returns a [Source] from the provided channel.
 func FromChan[T any](channel chan T) Source[T] {
 	return fromChan(channel)
 }

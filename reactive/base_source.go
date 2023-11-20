@@ -56,6 +56,7 @@ func (b *baseSource[T]) complete() {
 		go func(hookToRun func(), indexToRun int) {
 			defer wg.Done()
 			b.log(Verbose, "Processing UponClose hook %d", indexToRun)
+			defer b.logPanic(hookToRun)
 			hookToRun()
 		}(hook, index)
 	}
@@ -75,11 +76,11 @@ func (b *baseSource[T]) String() string {
 
 func (b *baseSource[T]) pump(item T) {
 	if b.closing {
-		b.log(Warning, "Ignoring item (%p). This source is closing.", item)
+		b.log(Warning, "Ignoring item (%.10s). This source is closing.", item)
 		return
 	}
 	wg := sync.WaitGroup{}
-	b.log(Verbose, "Beginning to send item (%p)", item)
+	b.log(Verbose, "Beginning to send item (%.10s)", item)
 	for _, sink := range b.sinks {
 		wg.Add(1)
 		go func(sinkToSendTo func(T) error) {
@@ -88,13 +89,22 @@ func (b *baseSource[T]) pump(item T) {
 		}(sink)
 	}
 	wg.Wait()
-	b.log(Verbose, "Finished sending item (%p)", item)
+	b.log(Verbose, "Finished sending item (%.10s)", item)
+}
+
+func (b *baseSource[T]) logPanic(risk interface{}) {
+	err := recover()
+	if err != nil {
+		b.log(Error, "Panic from (%p)! [%v]", risk, err)
+	}
+
 }
 
 func (b *baseSource[T]) sendItem(item T, sink func(T) error) {
-	b.log(Verbose, "Sending item (%p) to sink (%p)", item, sink)
+	b.log(Verbose, "Sending item (%.10s) to sink (%p)", item, sink)
+	defer b.logPanic(sink)
 	err := sink(item)
 	if err != nil {
-		b.log(Warning, "Failed to write item (%p) to sink (%p): [%s]", item, sink, err)
+		b.log(Warning, "Failed to write item (%.10s) to sink (%p): [%s]", item, sink, err)
 	}
 }

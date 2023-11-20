@@ -21,7 +21,7 @@ func main() {
 	returns := []string{"Hello", "world", "!"}
 	pos := 0
 	pipe := reactive.FromGeneratorWithDefaultBackoff(func() (*string, error) {
-		if rand.Float32() > 0 {
+		if rand.Float32() > 0.8 {
 			return nil, errors.New("simulated generator error")
 		}
 		if rand.Float32() > 0.5 {

@@ -1,7 +1,7 @@
 package reactive
 
 // Map observes one [Source], transform the items observed with the provided mapper function,
-// and returns a [Source] of the transformed items. The returned [Source] is active immediately.
+// and returns a [Source] of the transformed items. If the mapper returns an error the item dropped, it is not retried.
 func Map[T any, V any](source Source[T], mapper func(T) (V, error)) Source[V] {
 	c := make(chan V)
 	ret := fromChan(c)
@@ -11,22 +11,23 @@ func Map[T any, V any](source Source[T], mapper func(T) (V, error)) Source[V] {
 		ret.AwaitCompletion()
 	})
 	source.Observe(func(item T) error {
+		defer ret.logPanic(mapper)
 		transformed, err := mapper(item)
 		if err != nil {
-			ret.log(Warning, "Error mapping item (%p): [%v]", item, err)
+			ret.log(Warning, "Error mapping item (%.10s): [%v]", item, err)
 			return err
 		}
-		ret.log(Verbose, "Mapped item (%p) to (%p)", item, transformed)
+		ret.log(Verbose, "Mapped item (%.10s) to (%p)", item, transformed)
 		c <- transformed
 		return nil
 	})
-	ret.log(Debug, "Created mapped source.")
+	ret.log(Debug, "Created mapped source wit mapper (%p).", mapper)
 	ret.Start()
 	return ret
 }
 
 // Buffer observes one [Source], and returns a [Source] backed by a circular buffer with the requested size.
-// Implemented via a channel.
+// This is implemented via a channel.
 func Buffer[T any](source Source[T], size int) Source[T] {
 	c := make(chan T, size)
 	ret := fromChan(c)
