@@ -6,11 +6,11 @@ import (
 )
 
 func TestChanSource_HappyPath(t *testing.T) {
-	c := make(chan *string)
+	c := make(chan string)
 	underTest := FromChan(c)
 	results := make([]string, 0)
-	underTest.Observe(func(s *string) error {
-		results = append(results, *s)
+	underTest.Observe(func(s string) error {
+		results = append(results, s)
 		return nil
 	})
 	underTest.UponClose(func() {
@@ -19,17 +19,14 @@ func TestChanSource_HappyPath(t *testing.T) {
 		assert.Equal(t, results[2], "fizzbuzz")
 	})
 	underTest.Start()
-	fooBar := "foobar"
-	c <- &fooBar
-	test := "test"
-	c <- &test
-	fizzbuzz := "fizzbuzz"
-	c <- &fizzbuzz
+	c <- "foobar"
+	c <- "test"
+	c <- "fizzbuzz"
 	close(c)
 	underTest.AwaitCompletion()
 }
 func TestChanSource_CallsUponClose(t *testing.T) {
-	c := make(chan *string)
+	c := make(chan string)
 	underTest := FromChan(c)
 	uponCloseCalled := false
 	underTest.UponClose(func() {
@@ -42,20 +39,17 @@ func TestChanSource_CallsUponClose(t *testing.T) {
 }
 
 func TestChanSource_Realtime(t *testing.T) {
-	c := make(chan *string)
+	c := make(chan string)
 	underTest := FromChan(c)
 	results := make([]string, 0)
-	underTest.Observe(func(s *string) error {
-		results = append(results, *s)
+	underTest.Observe(func(s string) error {
+		results = append(results, s)
 		return nil
 	})
 	underTest.Start()
-	fooBar := "foobar"
-	c <- &fooBar
-	test := "test"
-	c <- &test
-	fizzbuzz := "fizzbuzz"
-	c <- &fizzbuzz
+	c <- "foobar"
+	c <- "test"
+	c <- "fizzbuzz"
 	close(c)
 	underTest.AwaitCompletion()
 	assert.Equal(t, results[0], "foobar")
@@ -65,20 +59,17 @@ func TestChanSource_Realtime(t *testing.T) {
 }
 
 func TestChanSource_BufferedRealtime(t *testing.T) {
-	c := make(chan *string, 3)
+	c := make(chan string, 3)
 	underTest := FromChan(c)
 	results := make([]string, 0)
-	underTest.Observe(func(s *string) error {
-		results = append(results, *s)
+	underTest.Observe(func(s string) error {
+		results = append(results, s)
 		return nil
 	})
 	underTest.Start()
-	fooBar := "foobar"
-	c <- &fooBar
-	test := "test"
-	c <- &test
-	fizzbuzz := "fizzbuzz"
-	c <- &fizzbuzz
+	c <- "foobar"
+	c <- "test"
+	c <- "fizzbuzz"
 	close(c)
 	underTest.AwaitCompletion()
 	assert.Equal(t, results[0], "foobar")
@@ -86,19 +77,16 @@ func TestChanSource_BufferedRealtime(t *testing.T) {
 	assert.Equal(t, results[2], "fizzbuzz")
 }
 func TestChanSource_HandlesPreStartedChannels(t *testing.T) {
-	c := make(chan *string, 10)
-	fooBar := "foobar"
-	c <- &fooBar
-	test := "test"
-	c <- &test
-	fizzbuzz := "fizzbuzz"
-	c <- &fizzbuzz
+	c := make(chan string, 10)
+	c <- "foobar"
+	c <- "test"
+	c <- "fizzbuzz"
 
 	underTest := FromChan(c)
 
 	var results []string
-	underTest.Observe(func(s *string) error {
-		results = append(results, *s)
+	underTest.Observe(func(s string) error {
+		results = append(results, s)
 		return nil
 	})
 	underTest.Start()
