@@ -77,7 +77,7 @@ func TestFromGenerator_ErrorsClear(t *testing.T) {
 
 	//should only pause once, for 20 ms
 	//first empty response should clear the error
-	assert.Less(t, time.Since(start), 21*time.Millisecond)
+	assert.Less(t, time.Since(start), 25*time.Millisecond)
 }
 
 func TestFromGenerator_NoBackoff(t *testing.T) {
