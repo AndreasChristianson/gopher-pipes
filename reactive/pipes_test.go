@@ -82,7 +82,7 @@ func TestBuffer_StartsImmediately(t *testing.T) {
 	assert.Equal(t, 123, result[0])
 }
 
-func TestBuffer_StartsCanAddWithoutObserving(t *testing.T) {
+func TestBuffer_CanAddWithoutObserving(t *testing.T) {
 	generatorCallCount := 0
 	source := FromGenerator(func() (*int, error) {
 		generatorCallCount++
@@ -96,9 +96,9 @@ func TestBuffer_StartsCanAddWithoutObserving(t *testing.T) {
 	})
 	source.Start()
 	time.Sleep(time.Millisecond)
-	// one in the source waiting to get into the chan, one in the sink waiting to sink, 10 in the buffer
 	err := source.Cancel()
 	assert.NoError(t, err)
 	source.AwaitCompletion()
+	// one in the source waiting to get into the chan, one in the sink waiting to sink, 10 in the buffer
 	assert.Equal(t, 12, generatorCallCount)
 }

@@ -9,31 +9,20 @@ import (
 type generatorSource[T any] struct {
 	generator func() (*T, error)
 	baseSource[T]
-	cancelled             bool
 	maxBackoff            float64
 	backoffMultiplier     float64
 	consecutiveErrorCount int
 }
 
-type GeneratorFinished struct{}
-
-func (g GeneratorFinished) Error() string {
-	return "Generator finished"
-}
-
 func (g *generatorSource[T]) start() {
-	for {
-		if g.cancelled {
-			g.log(Debug, "Discovered that this Source is cancelled.")
-			return
-		}
+	for !g.closing {
 		g.log(Verbose, "Polling generator (%p).", g.generator)
 		response, err := g.generator()
 		if response != nil {
 			g.pump(*response)
 		}
 		if err != nil {
-			var t GeneratorFinished
+			var t *GeneratorFinished
 			switch {
 			case errors.As(err, &t):
 				g.log(Debug, "Generator(%p) func indicates completion.", g.generator)
@@ -51,8 +40,8 @@ func (g *generatorSource[T]) start() {
 }
 
 func (g *generatorSource[T]) Cancel() error {
-	g.log(Info, "Marking source as cancelled.")
-	g.cancelled = true
+	g.log(Info, "Marking source as closing.")
+	g.closing = true
 	return nil
 }
 

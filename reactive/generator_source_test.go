@@ -12,7 +12,7 @@ func TestFromGenerator_HappyPath(t *testing.T) {
 	pos := 0
 	underTest := FromGeneratorWithDefaultBackoff(func() (*string, error) {
 		if pos >= len(responses) {
-			return nil, GeneratorFinished{}
+			return nil, &GeneratorFinished{}
 		}
 
 		ret := responses[pos]
@@ -55,6 +55,29 @@ func TestFromGenerator_Backoff(t *testing.T) {
 	err := underTest.Cancel()
 	assert.NoError(t, err)
 	underTest.AwaitCompletion()
+}
+
+func TestFromGenerator_ErrorsClear(t *testing.T) {
+	callCount := 0
+	start := time.Now()
+	underTest := FromGeneratorWithExponentialBackoff(func() (*string, error) {
+		callCount++
+		if callCount == 1 {
+			return nil, errors.New("")
+		}
+		if callCount < 10 {
+			return nil, nil
+		}
+		return nil, &GeneratorFinished{}
+
+	}, 100, 10)
+
+	underTest.Start()
+	underTest.AwaitCompletion()
+
+	//should only pause once, for 20 ms
+	//first empty response should clear the error
+	assert.Less(t, time.Since(start), 21*time.Millisecond)
 }
 
 func TestFromGenerator_NoBackoff(t *testing.T) {

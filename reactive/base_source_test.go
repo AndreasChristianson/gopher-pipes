@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 )
 
 func TestBaseSource_HandlesSinkPanic(t *testing.T) {
@@ -15,6 +17,28 @@ func TestBaseSource_HandlesSinkPanic(t *testing.T) {
 	})
 	underTest.Start()
 	underTest.AwaitCompletion()
+}
+
+func TestBaseSource_DoesNotSendToSinkWhenClosing(t *testing.T) {
+	lock := sync.Mutex{}
+	lock.Lock()
+	underTest := FromGenerator(func() (*bool, error) {
+		lock.Lock()
+		var t = true
+		return &t, nil
+	})
+	observeCount := 0
+	underTest.Observe(func(b bool) error {
+		observeCount++
+		return nil
+	})
+	underTest.Start()
+	time.Sleep(time.Millisecond)
+	err := underTest.Cancel()
+	assert.Nil(t, err)
+	lock.Unlock()
+	underTest.AwaitCompletion()
+	assert.Equal(t, 0, observeCount)
 }
 
 func TestBaseSource_HandlesHookPanic(t *testing.T) {

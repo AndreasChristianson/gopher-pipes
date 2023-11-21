@@ -27,9 +27,9 @@ jobs:
         with:
           profile: coverage.out
           local-prefix: github.com/AndreasChristianson/gopher-pipes
-          threshold-file: 0
-          threshold-package: 0
-          threshold-total: 30
+          threshold-file: 90
+          threshold-package: 90
+          threshold-total: 95
       - name: make coverage badge
         uses: action-badges/core@0.2.2
         with:
