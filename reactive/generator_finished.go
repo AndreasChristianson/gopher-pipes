@@ -1,5 +1,3 @@
-//go:build !test
-
 package reactive
 
 // GeneratorFinished should be returned from a generator function when the generator completes successfully,
@@ -7,6 +5,6 @@ package reactive
 type GeneratorFinished struct{} //todo: should generators just return three things?
 
 // Error implements the error interface
-func (g *GeneratorFinished) Error() string { //just a marker
+func (g *GeneratorFinished) Error() string {
 	return "Generator finished"
 }
