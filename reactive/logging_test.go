@@ -32,6 +32,11 @@ func TestLogging_EmitsMessages(t *testing.T) {
 	checkForLog(t, messages, Debug, "Registering sink")
 	checkForLog(t, messages, Verbose, "Beginning to send item (test)")
 }
+func TestLevel_String_shouldHandleStrangeValues(t *testing.T) {
+	assert.NotPanics(t, func() {
+		_ = Level(42).String()
+	})
+}
 
 func checkForLog(t *testing.T, messages []string, level Level, s string) {
 	for _, message := range messages {
