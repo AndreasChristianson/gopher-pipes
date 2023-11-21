@@ -13,7 +13,7 @@ func main() {
 	wg.Add(1)
 	pipe := reactive.FromGenerator(func() (*string, error) {
 		if pos == len(returns) {
-			return nil, reactive.GeneratorFinished{}
+			return nil, &reactive.GeneratorFinished{}
 		}
 		ret := returns[pos]
 		pos++
