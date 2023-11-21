@@ -9,7 +9,7 @@ import (
 // Level represents a log level ranging from Verbose to Error.
 //   - Verbose logging indicates intent and logs every item handled.
 //   - Debug logging indicates state changes and logs internal fields.
-//   - Info logging indicates once per Source status changes or handled errors.
+//   - Info logging happensf for once per Source status changes and handled errors.
 //   - Warning logging occurs when a function returns an error resulting in a message being discarded.
 //   - Error logging occurs when a source shuts down unexpectedly without cleaning up.
 //
@@ -21,7 +21,7 @@ const (
 	Verbose Level = iota
 	// Debug logging indicates state changes and logs internal fields. For example a generator's error count increasing or an observer (Source.Observe) being registered.
 	Debug
-	// Info logging indicates once per Source status changes or handled errors. For example a source successfully shuts down, or an error is encountered and handled
+	// Info logging occurs for once per Source status changes and handled errors. For example a source successfully shuts down, or an error is encountered and handled
 	Info
 	// Warning logging occurs when a function returns an error resulting in a message being discarded. For example when a sink returns an error.
 	Warning
