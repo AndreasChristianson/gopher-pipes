@@ -41,8 +41,8 @@ func main() {
 
 ### complicated
 
-This example polls a persistent redis stream via [XREAD](https://redis.io/commands/xread/) 
-and routes messages to a [websocket](https://github.com/gorilla/websocket)
+This example polls a persistent redis stream using [XREAD](https://redis.io/commands/xread/)
+(via [go-redis](https://github.com/redis/go-redis)) and routes messages to a [websocket](https://github.com/gorilla/websocket)
 
 ```go
 // todo
