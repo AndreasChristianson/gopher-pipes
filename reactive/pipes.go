@@ -1,7 +1,9 @@
 package reactive
 
-// Map observes one [Source], transform the items observed with the provided mapper function,
-// and returns a [Source] of the transformed items. If the mapper returns an error the item dropped, it is not retried.
+// Map observes one Source, transform the items observed with the provided mapper function,
+// and returns a Source of the transformed items. If the mapper returns an error the item dropped, it is not retried.
+//
+// The returned Source is already started.
 func Map[T any, V any](source Source[T], mapper func(T) (V, error)) Source[V] {
 	c := make(chan V)
 	ret := fromChan(c)
@@ -28,6 +30,8 @@ func Map[T any, V any](source Source[T], mapper func(T) (V, error)) Source[V] {
 
 // Buffer observes one [Source], and returns a [Source] backed by a circular buffer with the requested size.
 // This is implemented via a channel.
+//
+// The returned Source is already started.
 func Buffer[T any](source Source[T], size int) Source[T] {
 	c := make(chan T, size)
 	ret := fromChan(c)

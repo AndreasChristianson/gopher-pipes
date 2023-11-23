@@ -40,7 +40,7 @@ func (g *generatorSource[T]) start() {
 }
 
 func (g *generatorSource[T]) Cancel() error {
-	g.log(Info, "Marking source as closing.")
+	g.log(Info, "Cancel request received. Marking source as closed.")
 	g.closing = true
 	return nil
 }
